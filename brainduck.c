@@ -4,6 +4,11 @@
 
 unsigned int MEMORY = 30000;
 
+/*
+	`die` function writes first argument to stderr
+	and terminates the program.
+	If it ends in ':' perror will be called.
+*/
 void die(const char *msg) {
 	fputs(msg, stderr);
 	if (msg[0] && msg[strlen(msg)-1] == ':') {
@@ -26,6 +31,7 @@ int main(int argc, char *argv[]) {
 	if (file == NULL)
 		die("fopen:");
 
+	/* Source file size */
 	if (fseek(file, 0, SEEK_END) != 0) die("fseek:");
 	size_t source_length = ftell(file);
 	if (fseek(file, 0, SEEK_SET) != 0) die("fseek:");
@@ -51,6 +57,10 @@ int main(int argc, char *argv[]) {
 
 	/* Check for shebang in source file */
 	if (source_length >= 2 && source[0] == '#' && source[1] == '!') {
+		/*
+			If the source starts with "#!" it will remove first line from it
+			Note: original 'malloc'ed adress is lost, it will be freed on exit
+		*/
 		while (*source != '\n' && source_length) {
 			source++;
 			source_length--;
@@ -97,6 +107,7 @@ int main(int argc, char *argv[]) {
 			break;
 
 		case ',':
+			/* EOF yields 0 in current memory cell */
 			ch = getchar();
 			if (ch == EOF)
 				ch = 0;
