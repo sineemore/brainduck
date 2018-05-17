@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 unsigned int MEMORY = 30000;
+const char *argv0 = NULL; /* used in `usage()` */
 
 /*
 	`die` function writes first argument to stderr
@@ -20,14 +22,48 @@ void die(const char *msg) {
 	exit(EXIT_FAILURE);
 }
 
+void usage(const char *msg) {
+	fprintf(stderr, "usage: %s [-x] file\n", argv0);
+	if (msg)
+		die(msg);
+	exit(EXIT_FAILURE);
+}
+
 int main(int argc, char *argv[]) {
-	
-	if (argc != 2) {
-		fprintf(stderr, "usage: %s file", argv[0]);
-		exit(EXIT_FAILURE);
+
+	argv0 = argv[0];
+
+	/* Arguments */
+	char *filename = NULL;
+	bool enableExtensions = false;
+
+	for (int i = 1; i < argc; i++) {
+		if (argv[i][0] == '-') {
+			
+			if (!(argv[i][1] && argv[i][2] == '\0'))
+				usage("Wrong arguments");
+				
+			switch (argv[i][1]) {
+			
+			case 'x':
+				enableExtensions = true;
+				break;
+
+			default:
+				usage("Unknown argument");
+				break;
+			}
+		} else {
+			if (i != argc - 1)
+				usage("Wrong arguments");
+			filename = argv[i];
+		}
 	}
 
-	FILE *file = fopen(argv[1], "r");
+	if (!filename)
+		usage("Missing required arguments");
+
+	FILE *file = fopen(filename, "r");
 	if (file == NULL)
 		die("fopen:");
 
@@ -146,21 +182,28 @@ int main(int argc, char *argv[]) {
 				die("Unmatched bracket");
 			break;
 
-		case '$':
-			/* Print memory */
-			fputc('\n', stderr);
-			for (int i = 0; i < 32; i++) {
-				if (i == mem) fputc('[', stderr);
-				else if (i == mem + 1) fputc(']', stderr);
-				else fputc(' ', stderr);
-				fprintf(stderr, "%02X", memory[i]);
-			}
-			if (mem == 32) fputc(']', stderr);
-			fputc('\n', stderr);
-			break;
 
 		default:
 			/* Ignoring other chars */
+
+			if (enableExtensions) {
+				switch (code) {
+				
+				case '$':
+					/* Print memory 32 memory cells */
+					for (int i = 0; i < 32; i++) {
+						if (i == mem) fputc('[', stderr);
+						else if (i == mem + 1) fputc(']', stderr);
+						else fputc(' ', stderr);
+						fprintf(stderr, "%02X", memory[i]);
+					}
+					if (mem == 31) fputc(']', stderr);
+					fputc('\n', stderr);
+					break;
+				
+				}
+			}
+			
 			break;
 		
 		}
