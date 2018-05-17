@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
 	if (source_length >= 2 && source[0] == '#' && source[1] == '!') {
 		/*
 			If the source starts with "#!" it will remove first line from it
-			Note: original 'malloc'ed adress is lost, it will be freed on exit
+			Note: original 'malloc'ed address is lost, it will be freed on exit
 		*/
 		while (*source != '\n' && source_length) {
 			source++;
@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
 				switch (code) {
 				
 				case '$':
-					/* Print memory 32 memory cells */
+					/* Print first 32 memory cells */
 					for (int i = 0; i < 32; i++) {
 						if (i == mem) fputc('[', stderr);
 						else if (i == mem + 1) fputc(']', stderr);
